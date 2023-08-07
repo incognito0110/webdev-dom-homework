@@ -11,11 +11,11 @@
       <ul id="list" class="comments">
         <li class="comment">
           <div class="comment-header">
-            <div>Глеб Фокин</div>
-            <div id="addDate">12.02.22 12:18</div>
+            <div id="name">Глеб Фокин</div>
+            <div id="date">12.02.22 12:18</div>
           </div>
           <div class="comment-body">
-            <div class="comment-text">
+            <div id = "answer" class="comment-text" data-comment>
               Это будет первый комментарий на этой странице
             </div>
           </div>
@@ -28,11 +28,11 @@
         </li>
         <li class="comment">
           <div class="comment-header">
-            <div>Варвара Н.</div>
-            <div>13.02.22 19:22</div>
+            <div id="name">Варвара Н.</div>
+            <div id="date">13.02.22 19:22</div>
           </div>
           <div class="comment-body">
-            <div class="comment-text">
+            <div id = "answer" class="comment-text" data-comment>
               Мне нравится как оформлена эта страница! ❤
             </div>
           </div>
@@ -44,22 +44,24 @@
           </div>
         </li>
       </ul>
+
+
       <div class="add-form">
         <input
-          id="name-input"
+          id="text_input"
           type="text"
           class="add-form-name"
           placeholder="Введите ваше имя"
         />
         <textarea
-          id="text-input"
+          id="name_input"
           type="textarea"
           class="add-form-text"
           placeholder="Введите ваш коментарий"
           rows="4"
         ></textarea>
         <div class="add-form-row">
-          <button id="add-button" class="add-form-button">Написать</button>
+          <button id="addformbutton" class="add-form-button">Написать</button>
         </div>
       </div>
     </div>
@@ -72,62 +74,115 @@
 
   <script>
     "use strict";
+    const NameInputElement = document.getElementById("text_input");
+    const CommentInputElement = document.getElementById("name_input");
+    const ButtonInputElement = document.getElementById("addformbutton");
+    const ListCommentsElement = document.getElementById("list");
+    const commentDate = new Date();
     
-    // Коммент
+    const users = [
+      {
+        name: 'Глеб Фокин',
+        date: '12.02.22 12:18',
+        comment: 'Это будет первый комментарий на этой странице',
+        countLikes: 3,
+        isLiked: false,
 
-    const buttonElement = document.getElementById("add-button");
-    const listElement = document.getElementById("list");
-    const textInputElement = document.getElementById("text-input");
-    const nameInputElement = document.getElementById("name-input");
+      },
+      {
+        name: 'Варвара Н.',
+        date: '13.02.22 19:22',
+        comment: ' Мне нравится как оформлена эта страница! ❤',
+        countLikes: 75,
+        isLiked: false,
 
+      },
+    ]
 
-    const addDate = () => {
-      const date = new Date();
-      let time = {
-        hour: "numeric",
-        minute: "numeric",
+    const Initlikes = () => {
+        const likeButtons = document.querySelectorAll(".like-button");
+        for (const like of likeButtons) {
+          like.addEventListener('click', () => {
+            const user = users[like.dataset.index]
+            let a = user.countLikes
+            if (user.isLiked === false) {
+              user.isLiked = true;
+              like.classList.add("-active-like")
+              user.countLikes++;
+            }
+
+            else if (user.isLiked === true) {
+              user.isLiked = false
+              user.countLikes--;
+            }
+            renderUsers(); 
+          });
+        }
       };
-      let year = {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-      };
-      return (
-        date.toLocaleString("ru", year) + " " + date.toLocaleString("ru", time)
-      );
+Initlikes()
+
+
+const renderUsers = () => {
+  const usersHTML = users.map((user,index) => {
+    return `<li class="comment">
+        <div class="comment-header">
+          <div>${user.name}</div>
+          <div>${user.date}</div>
+        </div>
+        <div class="comment-body">
+          <div class="comment-text">
+            ${user.comment}
+          </div>
+        </div>
+        <div class="comment-footer">
+          <div class="likes">
+            <span class="likes-counter">${user.countLikes}</span>
+            <button class="like-button ${user.isLiked ? '-active-like' : ''}" data-index='${index}'></button>
+          </div>
+        </div>
+      </li>`;
+    })
+      .join("");
+      
+      ListCommentsElement.innerHTML = usersHTML;
+      Initlikes();
     };
+    renderUsers();
 
-    buttonElement.addEventListener("click", () => {
-      nameInputElement.classList.remove("error");
-      if (nameInputElement.value === "") {
-        nameInputElement.classList.add("error");
+
+    ButtonInputElement.addEventListener("click", () => {
+
+      if (NameInputElement.value === "" || CommentInputElement.value === "") {
+        ButtonInputElement.disabled = true;
         return;
       }
-      const oldListHtml = listElement.innerHTML;
-      listElement.innerHTML =
-        oldListHtml +
-        `<li id="list" class="comment">
-          <div class="comment-header">
-            <div>${nameInputElement.value}</div>
-            <div>${addDate()}</div>
-          </div>
-          <div class="comment-body">
-            <div class="comment-text">
-              ${textInputElement.value}
-            </div>
-          </div>
-          <div class="comment-footer">
-            <div class="likes">
-              <span class="likes-counter">0</span>
-              <button class="like-button"></button>
-            </div>
-          </div>
-        </li>`;
-      nameInputElement.value = "";
-      textInputElement.value = "";
-    });
-    //  датa
+   
+  
+      users.push({
 
-    // лайки
+      name: NameInputElement.value,
+      date: `${commentDate.toLocaleDateString('numeric')} ${commentDate.toLocaleTimeString([], {hour: "2-digit", minute:"2-digit"})
+      }`,
+      comment: CommentInputElement.value,
+      countLikes: 0,
+      isLiked: false,
+    });
+    
+    renderUsers();
+    NameInputElement.value = "";
+    CommentInputElement.value = "";
+  });
+
+
+const comment = document.querySelectorAll('.comment-text')
+comment.forEach(comment => {
+  comment.addEventListener('click', handLeReply)
+})
+
+function handLeReply(event) {
+  const commentDate = evetn.target.dataset.comment
+  const replyInput = document.getElementById('reply-input')
+  replyInput.value = commentDate
+}
   </script>
 </html>
